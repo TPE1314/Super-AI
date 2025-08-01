@@ -1,0 +1,70 @@
+name: Build APK with Docker
+
+on:
+  push:
+    branches: [ main, master, cursor/* ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Build with Docker
+      run: |
+        # 创建输出目录
+        mkdir -p build-output
+        
+        # 使用Docker构建
+        docker run --rm \
+          -v "$(pwd):/workspace" \
+          -v "$(pwd)/build-output:/output" \
+          openjdk:11-jdk bash -c "
+            cd /workspace &&
+            echo '🔧 安装依赖...' &&
+            apt-get update -qq && apt-get install -y -qq wget unzip curl &&
+            echo '📥 下载Android SDK...' &&
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip &&
+            unzip -q commandlinetools-linux-9477386_latest.zip &&
+            export ANDROID_HOME=/android-sdk &&
+            export PATH=\$PATH:\$ANDROID_HOME/cmdline-tools/cmdline-tools/bin &&
+            echo '⚙️ 配置Android SDK...' &&
+            echo 'sdk.dir=\$ANDROID_HOME' > local.properties &&
+            yes | sdkmanager --licenses > /dev/null 2>&1 &&
+            sdkmanager 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0' > /dev/null 2>&1 &&
+            echo '🔨 构建APK...' &&
+            ./gradlew assembleDebug --no-daemon --stacktrace &&
+            echo '📱 复制APK到输出目录...' &&
+            cp app/build/outputs/apk/debug/app-debug.apk /output/ &&
+            echo '✅ 构建完成！'
+          "
+        
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug-docker
+        path: build-output/app-debug.apk
+        
+    - name: Create Feature Summary
+      run: |
+        echo "## 🚀 Docker构建APK完成" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ✨ 新增功能" >> $GITHUB_STEP_SUMMARY
+        echo "- 📚 聊天历史记录" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔍 搜索功能" >> $GITHUB_STEP_SUMMARY
+        echo "- 📊 历史记录管理" >> $GITHUB_STEP_SUMMARY
+        echo "- 🎨 优化的用户界面" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 Room数据库支持" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📱 下载链接" >> $GITHUB_STEP_SUMMARY
+        echo "- **Docker构建版本**: [app-debug-docker.apk](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📋 安装说明" >> $GITHUB_STEP_SUMMARY
+        echo "1. 点击上面的链接下载APK文件" >> $GITHUB_STEP_SUMMARY
+        echo "2. 在Android设备上启用'未知来源'应用安装" >> $GITHUB_STEP_SUMMARY
+        echo "3. 点击APK文件进行安装" >> $GITHUB_STEP_SUMMARY
+        echo "4. 打开应用，点击右上角历史记录图标查看新功能" >> $GITHUB_STEP_SUMMARY
