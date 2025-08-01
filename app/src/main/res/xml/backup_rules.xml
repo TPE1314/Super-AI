@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude specific files or directories that should not be backed up.
+         For example, if your app creates a large database file that is not
+         user-generated data, you might want to exclude it from backup.
+         See the documentation for autoBackup for details. -->
+</full-backup-content>
