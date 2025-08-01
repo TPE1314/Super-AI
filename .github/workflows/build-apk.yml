@@ -22,7 +22,10 @@ jobs:
         
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-      
+      with:
+        api-level: 34
+        build-tools: 34.0.0
+        
     - name: Cache Gradle packages
       uses: actions/cache@v3
       with:
@@ -36,23 +39,24 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
+    - name: Debug Environment
+      run: |
+        echo "ANDROID_HOME: $ANDROID_HOME"
+        echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+        echo "JAVA_HOME: $JAVA_HOME"
+        ls -la
+        cat local.properties || echo "local.properties not found"
+        
     - name: Build Debug APK
-      run: ./gradlew assembleDebug
-      
-    - name: Build Release APK
-      run: ./gradlew assembleRelease
-      
+      run: ./gradlew assembleDebug --stacktrace --info
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
+        
     - name: Upload Debug APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-with-features
         path: app/build/outputs/apk/debug/app-debug.apk
-        
-    - name: Upload Release APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release-with-features
-        path: app/build/outputs/apk/release/app-release.apk
         
     - name: Create Feature Summary
       run: |
@@ -67,7 +71,6 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📱 下载链接" >> $GITHUB_STEP_SUMMARY
         echo "- **调试版本**: [app-debug-with-features.apk](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-        echo "- **发布版本**: [app-release-with-features.apk](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📋 安装说明" >> $GITHUB_STEP_SUMMARY
         echo "1. 点击上面的链接下载APK文件" >> $GITHUB_STEP_SUMMARY
