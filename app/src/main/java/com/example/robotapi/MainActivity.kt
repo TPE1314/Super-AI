@@ -1,12 +1,16 @@
 package com.example.robotapi
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.robotapi.data.ChatMessage
 import com.example.robotapi.databinding.ActivityMainBinding
+import com.example.robotapi.ui.HistoryActivity
 import com.example.robotapi.viewmodel.MainViewModel
 import com.example.robotapi.viewmodel.UiState
 import com.google.android.material.snackbar.Snackbar
@@ -88,11 +92,17 @@ class MainActivity : AppCompatActivity() {
                     binding.progressBar.visibility = View.GONE
                     binding.sendButton.isEnabled = true
                     showSnackbar("请求成功")
+                    
+                    // 保存到历史记录
+                    saveToHistory(state.data)
                 }
                 is UiState.Error -> {
                     binding.progressBar.visibility = View.GONE
                     binding.sendButton.isEnabled = true
                     showSnackbar("错误: ${state.message}")
+                    
+                    // 保存错误记录
+                    saveErrorToHistory(state.message)
                 }
             }
         }
@@ -125,6 +135,56 @@ class MainActivity : AppCompatActivity() {
             if (error != null) {
                 showSnackbar(error)
             }
+        }
+    }
+    
+    private fun saveToHistory(response: com.example.robotapi.data.ApiResponse) {
+        val url = binding.apiUrlEditText.text.toString().trim()
+        val message = binding.messageEditText.text.toString().trim()
+        
+        val chatMessage = ChatMessage(
+            message = message,
+            response = response.message,
+            apiUrl = url,
+            isSuccess = true
+        )
+        
+        // 这里可以调用HistoryViewModel来保存记录
+        // 暂时使用简单的本地存储
+    }
+    
+    private fun saveErrorToHistory(errorMessage: String) {
+        val url = binding.apiUrlEditText.text.toString().trim()
+        val message = binding.messageEditText.text.toString().trim()
+        
+        val chatMessage = ChatMessage(
+            message = message,
+            response = "",
+            apiUrl = url,
+            isSuccess = false,
+            errorMessage = errorMessage
+        )
+        
+        // 这里可以调用HistoryViewModel来保存记录
+        // 暂时使用简单的本地存储
+    }
+    
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+    
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_history -> {
+                startActivity(Intent(this, HistoryActivity::class.java))
+                true
+            }
+            R.id.action_settings -> {
+                showSnackbar("设置功能开发中...")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
     

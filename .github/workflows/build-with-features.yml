@@ -1,0 +1,76 @@
+name: Build APK with New Features
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+      
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+      
+    - name: Upload Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug-with-features
+        path: app/build/outputs/apk/debug/app-debug.apk
+        
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release-with-features
+        path: app/build/outputs/apk/release/app-release.apk
+        
+    - name: Create Feature Summary
+      run: |
+        echo "## 🚀 新功能APK构建完成" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ✨ 新增功能" >> $GITHUB_STEP_SUMMARY
+        echo "- 📚 聊天历史记录" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔍 搜索功能" >> $GITHUB_STEP_SUMMARY
+        echo "- 📊 历史记录管理" >> $GITHUB_STEP_SUMMARY
+        echo "- 🎨 优化的用户界面" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 Room数据库支持" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📱 下载链接" >> $GITHUB_STEP_SUMMARY
+        echo "- **调试版本**: [app-debug-with-features.apk](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+        echo "- **发布版本**: [app-release-with-features.apk](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📋 安装说明" >> $GITHUB_STEP_SUMMARY
+        echo "1. 点击上面的链接下载APK文件" >> $GITHUB_STEP_SUMMARY
+        echo "2. 在Android设备上启用'未知来源'应用安装" >> $GITHUB_STEP_SUMMARY
+        echo "3. 点击APK文件进行安装" >> $GITHUB_STEP_SUMMARY
+        echo "4. 打开应用，点击右上角历史记录图标查看新功能" >> $GITHUB_STEP_SUMMARY
