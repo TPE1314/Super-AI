@@ -20,9 +20,6 @@ android {
         
         // 启用多dex支持
         multiDexEnabled true
-        
-        // 启用R8优化
-        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
 
     buildTypes {
@@ -71,9 +68,6 @@ android {
             universalApk true
         }
     }
-    
-    // 启用命名空间
-    namespace 'com.example.robotapi'
 }
 
 dependencies {

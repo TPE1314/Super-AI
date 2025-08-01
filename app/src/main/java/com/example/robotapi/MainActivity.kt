@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.robotapi.data.ChatMessage
 import com.example.robotapi.databinding.ActivityMainBinding
 import com.example.robotapi.ui.HistoryActivity
+import com.example.robotapi.viewmodel.HistoryViewModel
 import com.example.robotapi.viewmodel.MainViewModel
 import com.example.robotapi.viewmodel.UiState
 import com.google.android.material.snackbar.Snackbar
@@ -20,6 +21,7 @@ class MainActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
+    private val historyViewModel: HistoryViewModel by viewModels()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,8 +151,8 @@ class MainActivity : AppCompatActivity() {
             isSuccess = true
         )
         
-        // 这里可以调用HistoryViewModel来保存记录
-        // 暂时使用简单的本地存储
+        // 保存到历史记录
+        historyViewModel.addMessage(chatMessage)
     }
     
     private fun saveErrorToHistory(errorMessage: String) {
@@ -165,8 +167,8 @@ class MainActivity : AppCompatActivity() {
             errorMessage = errorMessage
         )
         
-        // 这里可以调用HistoryViewModel来保存记录
-        // 暂时使用简单的本地存储
+        // 保存到历史记录
+        historyViewModel.addMessage(chatMessage)
     }
     
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

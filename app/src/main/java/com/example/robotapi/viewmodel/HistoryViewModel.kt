@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.robotapi.data.ChatMessage
 import com.example.robotapi.database.AppDatabase
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 class HistoryViewModel(application: Application) : AndroidViewModel(application) {
